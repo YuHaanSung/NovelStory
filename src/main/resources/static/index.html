@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>노벨스토리 - 작가 등록</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; }
+        .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 400px; }
+        h2 { text-align: center; color: #333; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        #result { margin-top: 15px; text-align: center; color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>✒️ 노벨스토리 작가 신청</h2>
+    <input type="text" id="name" placeholder="작가명 (예: 유한성)">
+    <input type="text" id="id" placeholder="아이디">
+    <input type="password" id="password" placeholder="비밀번호">
+    <textarea id="introduction" placeholder="간단한 작가 소개" rows="3"></textarea>
+    <button onclick="signup()">작가 등록하기</button>
+    <div id="result"></div>
+</div>
+
+<script>
+    function signup() {
+        // 1. 화면에 입력된 값을 가져온다.
+        const data = {
+            name: document.getElementById('name').value,
+            id: document.getElementById('id').value,
+            password: document.getElementById('password').value,
+            introduction: document.getElementById('introduction').value
+        };
+
+        // 2. 님이 만든 자바 백엔드 API로 데이터를 쏜다! (POST 요청)
+        fetch('/api/signup', {
+            method: 'POST', // "생성해줘!"라고 요청
+            headers: {
+                'Content-Type': 'application/json' // "나 지금 JSON 보낸다"라고 알림
+            },
+            body: JSON.stringify(data) // 자바스크립트 객체를 JSON 문자열로 변환
+        })
+            .then(response => response.text()) // 서버가 보낸 응답(String)을 받음
+            .then(message => {
+                alert("회원가입 성공! 로그인 페이지로 이동합니다.");
+                window.location.href = "login.html"; // 로그인 페이지로 이동
+                // 3. 성공하면 화면에 메시지를 띄운다.
+                document.getElementById('result').innerText = message;
+                alert("서버 응답: " + message);
+            })
+            .catch(error => {
+                console.error('에러 발생:', error);
+                alert("가입 중 오류가 발생했습니다.");
+            });
+    }
+</script>
+
+</body>
+</html>

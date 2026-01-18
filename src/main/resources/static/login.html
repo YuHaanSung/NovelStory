@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>노벨스토리 - 로그인</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; margin: 0; }
+        .container { background: white; padding: 2.5rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        h2 { color: #333; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background-color: #218838; }
+        .link { margin-top: 15px; font-size: 14px; }
+        .link a { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔑 로그인</h2>
+    <input type="text" id="loginId" placeholder="아이디">
+    <input type="password" id="loginPassword" placeholder="비밀번호">
+    <button onclick="login()">로그인 하기</button>
+
+    <div class="link">
+        계정이 없으신가요? <a href="index.html">회원가입 하러가기</a>
+    </div>
+</div>
+
+<script>
+    function login() {
+        // 1. 입력한 아이디/비번 가져오기
+        const data = {
+            id: document.getElementById('loginId').value,
+            password: document.getElementById('loginPassword').value
+        };
+
+        // 2. 백엔드 로그인 API(/api/login)로 쏘기
+        fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.text()) // 서버 응답(문자열) 받기
+            .then(message => {
+                if(message.includes("성공")) {
+                    // [추가된 부분] 로그인 성공한 아이디를 브라우저에 저장!
+                    const loginId = document.getElementById('loginId').value;
+                    localStorage.setItem('loginAuthorId', loginId);
+
+                    alert("로그인 성공! 작가 스튜디오로 이동합니다.");
+                    window.location.href = 'writer_main.html';
+                } else {
+                    alert(message);
+                }
+            })
+            .catch(error => {
+                console.error('에러:', error);
+                alert("로그인 중 오류가 발생했습니다.");
+            });
+    }
+</script>
+
+</body>
+</html>
