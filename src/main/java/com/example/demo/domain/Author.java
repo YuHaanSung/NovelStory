@@ -59,4 +59,11 @@ public class Author {
 
 
 
+
+    //오직 작가만이 Novel의 태그를 추가할 수 있음.
+    public void addTagToNovel(Novel novel, String tag) {
+        novel.addTag(tag); //Novel 클래스의 addTag 메서드 호출
+    }
+
+
 }

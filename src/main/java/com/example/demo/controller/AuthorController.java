@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.domain.Author;
 import com.example.demo.domain.Novel;
 import com.example.demo.domain.NovelPart;
-import com.example.demo.domain.Tag;
 import com.example.demo.dto.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +18,6 @@ public class AuthorController {
     private List<Novel> novelList = new ArrayList<>();
 
     private List<NovelPart> NovelPartList = new ArrayList<>();
-
-    private List<Tag> tagList = new ArrayList<>();
 
     @PostMapping("/api/signup") // 프론트엔드가 이 주소로 데이터를 보냅니다.
     public String register(@RequestBody AuthorRequest request) {
@@ -89,9 +86,9 @@ public class AuthorController {
                 Novel newNovel = new Novel(
                         author.getName(),
                         request.getTitle(),
+                        request.getTag(),
                         request.getSummary()
                 );
-
 
                 // 소설 리스트에 저장
                 novelList.add(newNovel);
@@ -210,7 +207,14 @@ public class AuthorController {
                         // 소설 정보 업데이트
                         novel.setTitle(request.getTitle());
                         novel.setSummary(request.getSummary());
-
+                        ArrayList<String> newTags = new ArrayList<>();
+                        if (request.getTag() != null && !request.getTag().isEmpty()) {
+                            String[] splitTags = request.getTag().split(",");
+                            for (String t : splitTags) {
+                                newTags.add(t.trim());
+                            }
+                        }
+                        novel.setTag(newTags);
                         return "소설 '" + novelTitle + "'이(가) 성공적으로 업데이트되었습니다!";
                     }
                 }

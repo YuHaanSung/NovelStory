@@ -8,6 +8,8 @@ public class Novel {
     private String author;
     // 작품의 제목 String타입 변수
     private String title;
+    // 작품의 태그 String타입 변수
+    private ArrayList<String> tag = new ArrayList<>();
 
     // 작품의 요약 String타입 변수
     private String summary;
@@ -28,6 +30,12 @@ public class Novel {
     public void setTitle(String title) {
         this.title = title;
     }
+    public ArrayList<String> getTag() {
+        return tag;
+    }
+    public void setTag(ArrayList<String> tag) {
+        this.tag = tag;
+    }
 
     public String getSummary() {
         return summary;
@@ -39,10 +47,22 @@ public class Novel {
 
 
     //생성자는 작가, 제목, 태그, 요약을 매개변수로 받음.
-    public Novel(String author, String title, String summary) {
+    public Novel(String author, String title, String tag, String summary) {
         this.author = author;
         this.title = title;
         this.summary = summary;
+        // [수정] 쉼표로 쪼개서 넣기 (빈칸도 제거)
+        if (tag != null && !tag.isEmpty()) {
+            String[] splitTags = tag.split(",");
+            for (String t : splitTags) {
+                this.tag.add(t.trim());
+            }
+        }
     }
+    //addTag 메서드: 소설의 태그를 추가하거나 변경할 수 있음.
+    public void addTag(String tag) {
+        this.tag.add(tag);
+    }
+
 
 }
