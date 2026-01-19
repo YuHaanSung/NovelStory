@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>작품 관리 및 수정</title>
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f2f4f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 600px; }
+
+        .header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; text-align: center; }
+        h2 { margin: 0; color: #333; }
+        .sub-text { color: #888; font-size: 14px; margin-top: 5px; }
+
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 15px; }
+
+        /* 버튼 그룹 */
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; }
+
+        .btn-save { background-color: #6c5ce7; color: white; }
+        .btn-save:hover { background-color: #5b4cc4; }
+
+        .btn-cancel { background-color: #e0e0e0; color: #333; }
+        .btn-cancel:hover { background-color: #d0d0d0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>⚙️ 작품 정보 수정</h2>
+        <div class="sub-text">작품 정보를 변경하면 즉시 반영됩니다.</div>
+    </div>
+
+    <input type="hidden" id="originalTitle"> <label>작품 제목</label>
+    <input type="text" id="title">
+
+    <label>태그 (쉼표로 구분)</label>
+    <input type="text" id="tag" placeholder="예: 판타지, 로맨스">
+
+    <label>작품 줄거리</label>
+    <textarea id="summary" rows="6"></textarea>
+
+    <div class="btn-group">
+        <button class="btn-cancel" onclick="goBack()">취소</button>
+        <button class="btn-save" onclick="updateNovel()">수정 저장하기</button>
+    </div>
+</div>
+
+<script>
+    // URL에서 수정할 소설의 '원래 제목'을 가져옵니다.
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetTitle = urlParams.get('title'); // writer_main.html에서 넘겨준 값
+    const authorId = localStorage.getItem('loginAuthorId');
+
+    // 페이지 열리자마자 실행
+    window.onload = function() {
+        if (!targetTitle || !authorId) {
+            alert("잘못된 접근입니다.");
+            location.href = 'writer_main.html';
+            return;
+        }
+
+        // 1. 기존 정보를 불러와서 화면에 채워 넣기 (GET)
+        fetch(`/api/authors/${authorId}/manageNovels/${encodeURIComponent(targetTitle)}`)
+            .then(response => {
+                if(!response.ok) throw new Error("정보 불러오기 실패");
+                return response.json();
+            })
+            .then(data => {
+                // 가져온 데이터를 input창에 넣어줍니다.
+                document.getElementById('originalTitle').value = data.title; // 나중에 쓸 데가 있어서 숨겨둠
+                document.getElementById('title').value = data.title;
+                document.getElementById('summary').value = data.summary;
+
+                // 태그 처리 (리스트면 콤마로 합치고, 아니면 그냥 보여주기)
+                if (Array.isArray(data.tag)) {
+                    document.getElementById('tag').value = data.tag.join(', ');
+                } else {
+                    document.getElementById('tag').value = data.tag;
+                }
+            })
+            .catch(err => {
+                alert("소설 정보를 불러올 수 없습니다.");
+                console.error(err);
+                location.href = 'writer_main.html';
+            });
+    };
+
+    // 2. 수정된 내용 서버로 보내기 (PUT)
+    function updateNovel() {
+        const originalTitle = document.getElementById('originalTitle').value;
+
+        const data = {
+            title: document.getElementById('title').value,
+            tag: document.getElementById('tag').value,
+            summary: document.getElementById('summary').value
+        };
+
+        // 주소는 '원래 제목'으로 찾고, 내용물(Body)에는 '바뀔 정보'를 담아 보냅니다.
+        // 이게 님이 설계하신 updateSpecificNovel API의 핵심입니다!
+        fetch(`/api/authors/${authorId}/manageNovels/${encodeURIComponent(originalTitle)}`, {
+            method: 'PUT', // 수정 요청
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message); // "소설 OOO이 성공적으로 업데이트되었습니다!"
+                location.href = 'writer_main.html'; // 메인으로 복귀
+            })
+            .catch(error => {
+                console.error(error);
+                alert("수정 중 오류가 발생했습니다.");
+            });
+    }
+
+    function goBack() {
+        location.href = 'writer_main.html';
+    }
+</script>
+
+</body>
+</html>

@@ -9,7 +9,6 @@ public class Author {
     private String introduction; //작가소개
     private String id;
     private String password;
-    private ArrayList<Novel> novels = new ArrayList<>();
     //해당 작가가 소유한 Novel들을 저장하는 배열
 
     public String getName() {
@@ -44,13 +43,6 @@ public class Author {
         this.password = password;
     }
 
-    public ArrayList<Novel> getNovels() {
-        return novels;
-    }
-
-    public void setNovels(ArrayList<Novel> novels) {
-        this.novels = novels;
-    }
 
 
 
@@ -65,26 +57,6 @@ public class Author {
     }
 
 
-
-
-
-
-    //작가가 소설을 생성해서 소설목록에 추가함.
-    public Novel createNovel(String title, String tag, String summary) {
-        Novel newNovel = new Novel(this.name, title, tag, summary);
-        this.novels.add(newNovel); // [중요] 내 소설 목록에 추가!
-        return newNovel;
-    }
-
-    //오직 작가만이 자신만의 Novel의 일부인 NovelPart를 생성할 수 있음.
-    public NovelPart createNovelPart(Novel novel, String partTitle, String content, int partNumber) {
-        return new NovelPart(novel, partTitle, content, partNumber); //NovelPart 클래스의 생성
-    }
-
-    //오직 작가만이 Novel의 태그를 추가할 수 있음.
-    public void addTagToNovel(Novel novel, String tag) {
-        novel.addTag(tag); //Novel 클래스의 addTag 메서드 호출
-    }
 
 
 }

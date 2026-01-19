@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>노벨스토리 뷰어</title>
+    <style>
+        body { font-family: 'Ridibatang', 'Noto Serif KR', serif; background-color: #fdfbf7; color: #333; margin: 0; line-height: 2; }
+        .viewer-container { max-width: 800px; margin: 0 auto; padding: 60px 20px; min-height: 100vh; background-color: #fdfbf7; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+
+        /* 뷰어 헤더 */
+        .viewer-header { text-align: center; margin-bottom: 50px; border-bottom: 1px solid #ddd; padding-bottom: 20px; }
+        .novel-title { font-size: 14px; color: #888; font-family: 'Noto Sans KR', sans-serif; margin-bottom: 10px; }
+        .episode-title { font-size: 28px; font-weight: bold; margin: 0; }
+
+        /* 본문 내용 */
+        .content { font-size: 18px; white-space: pre-wrap; word-break: keep-all; text-align: justify; }
+
+        /* 하단 네비게이션 */
+        .viewer-footer { margin-top: 60px; padding-top: 30px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; font-family: 'Noto Sans KR', sans-serif; }
+        button { padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #eee; }
+        .btn-list { background-color: #333; color: white; border: none; }
+        .btn-list:hover { background-color: #555; }
+    </style>
+    <link rel="stylesheet" href="https://webfontworld.github.io/ridi/Ridibatang.css">
+</head>
+<body>
+
+<div class="viewer-container">
+    <div class="viewer-header">
+        <div class="novel-title" id="novel-title">소설 제목</div>
+        <h1 class="episode-title" id="episode-title">로딩 중...</h1>
+    </div>
+
+    <div class="content" id="content">
+        내용을 불러오는 중입니다...
+    </div>
+
+    <div class="viewer-footer">
+        <button onclick="moveEpisode(-1)">⬅️ 이전화</button>
+        <button class="btn-list" onclick="goList()">목록으로</button>
+        <button onclick="moveEpisode(1)">다음화 ➡️</button>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const novelTitle = urlParams.get('title');
+    let currentPart = parseInt(urlParams.get('part'));
+
+    window.onload = function() {
+        loadContent(currentPart);
+    };
+
+    function loadContent(partNumber) {
+        // 백엔드에서 글 내용 가져오기 (방금 만든 API)
+        fetch(`/api/novels/${encodeURIComponent(novelTitle)}/parts/${partNumber}`)
+            .then(res => {
+                if (!res.ok) throw new Error("내용 없음");
+                return res.json();
+            })
+            .then(data => {
+                document.getElementById('novel-title').innerText = data.novelTitle;
+                document.getElementById('episode-title').innerText = `${data.partNumber}화. ${data.partTitle}`;
+                document.getElementById('content').innerText = data.content;
+                currentPart = data.partNumber; // 현재 화수 업데이트
+
+                // 주소창 URL도 예쁘게 바꿔주기 (새로고침 없이)
+                history.pushState(null, null, `?title=${encodeURIComponent(novelTitle)}&part=${currentPart}`);
+
+                // 화면 맨 위로 스크롤
+                window.scrollTo(0, 0);
+            })
+            .catch(err => {
+                alert("마지막 회차이거나, 내용을 불러올 수 없습니다.");
+            });
+    }
+
+    function moveEpisode(direction) {
+        const nextPart = currentPart + direction;
+        if (nextPart < 1) {
+            alert("첫 번째 화입니다.");
+            return;
+        }
+        loadContent(nextPart);
+    }
+
+    function goList() {
+        location.href = `novel_home.html?title=${encodeURIComponent(novelTitle)}`;
+    }
+</script>
+
+</body>
+</html>

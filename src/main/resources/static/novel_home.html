@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>소설 상세정보</title>
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f2f4f7; display: flex; justify-content: center; margin: 0; padding: 20px; }
+        .container { max-width: 800px; width: 100%; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
+
+        /* 상단 소설 정보 */
+        .novel-header { padding: 40px; background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; }
+        .novel-title { font-size: 32px; font-weight: bold; margin: 0 0 10px 0; }
+        .novel-meta { font-size: 14px; opacity: 0.9; margin-bottom: 20px; }
+        .novel-tag { display: inline-block; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 15px; font-size: 12px; margin-right: 5px; }
+        .novel-summary { font-size: 16px; line-height: 1.6; opacity: 0.95; white-space: pre-line; }
+
+        /* 하단 회차 목록 */
+        .part-list-container { padding: 30px; }
+        .section-title { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+
+        .part-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: 0.2s; }
+        .part-item:hover { background-color: #f8f9fa; transform: translateX(5px); }
+        .part-title { font-weight: bold; color: #333; }
+        .part-num { color: #888; font-size: 14px; margin-right: 15px; }
+
+        .btn-read { background: #6c5ce7; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="novel-header">
+        <div id="tags"></div>
+        <h1 class="novel-title" id="title">로딩 중...</h1>
+        <div class="novel-meta">
+            <span id="author">작가명</span> |
+            <span id="uploadDate">연재중</span>
+        </div>
+        <div class="novel-summary" id="summary"></div>
+    </div>
+
+    <div class="part-list-container">
+        <div class="section-title">📖 회차 목록</div>
+        <div id="part-list">
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const novelTitle = urlParams.get('title');
+
+    window.onload = function() {
+        if (!novelTitle) { alert("잘못된 접근입니다."); location.href = 'index.html'; return; }
+
+        // 1. 소설 기본 정보 가져오기 (방금 만든 API)
+        fetch('/api/novels/' + encodeURIComponent(novelTitle))
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('title').innerText = data.title;
+                document.getElementById('author').innerText = data.author;
+                document.getElementById('summary').innerText = data.summary;
+
+                // 태그 처리
+                const tagContainer = document.getElementById('tags');
+                const tags = Array.isArray(data.tag) ? data.tag : [data.tag];
+                tags.forEach(tag => {
+                    tagContainer.innerHTML += `<span class="novel-tag">#${tag}</span>`;
+                });
+            });
+
+        // 2. 회차 목록 가져오기 (기존 API 활용)
+        fetch(`/api/novels/${encodeURIComponent(novelTitle)}/parts`)
+            .then(res => res.json())
+            .then(parts => {
+                const list = document.getElementById('part-list');
+
+                // 회차 번호 순서대로 정렬 (1화, 2화...)
+                parts.sort((a, b) => a.partNumber - b.partNumber);
+
+                if(parts.length === 0) {
+                    list.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">등록된 회차가 없습니다.</div>';
+                    return;
+                }
+
+                parts.forEach(part => {
+                    const html = `
+                        <div class="part-item" onclick="readEpisode(${part.partNumber})">
+                            <div>
+                                <span class="part-num">${part.partNumber}화</span>
+                                <span class="part-title">${part.partTitle}</span>
+                            </div>
+                            <button class="btn-read">읽기</button>
+                        </div>
+                    `;
+                    list.innerHTML += html;
+                });
+            });
+    };
+
+    function readEpisode(partNumber) {
+        // 뷰어 페이지로 이동!
+        location.href = `novel_viewer.html?title=${encodeURIComponent(novelTitle)}&part=${partNumber}`;
+    }
+</script>
+
+</body>
+</html>

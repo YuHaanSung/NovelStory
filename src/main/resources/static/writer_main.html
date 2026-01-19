@@ -6,7 +6,7 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f2f4f7; margin: 0; padding: 0; }
 
-        /* 상단 헤더 (프로필 영역) */
+        /* 프로필 영역 */
         .header-container { background-color: white; padding: 40px 20px; text-align: center; border-bottom: 1px solid #ddd; }
         .profile-card { max-width: 800px; margin: 0 auto; display: flex; align-items: center; gap: 20px; }
         .profile-img { width: 80px; height: 80px; background-color: #333; border-radius: 50%; }
@@ -14,45 +14,47 @@
         .profile-name { font-size: 24px; font-weight: bold; color: #333; }
         .profile-intro { color: #666; margin-top: 5px; }
 
-        /* 메인 컨텐츠 (소설 목록) */
+        /* 소설 목록 영역 */
         .main-container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
         .section-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* 버튼 스타일 */
-        .btn-group button { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; margin-left: 10px; transition: 0.2s; }
-        .btn-new-novel { background-color: #6c5ce7; color: white; } /* 보라색 (노벨피아 느낌) */
+        .btn-new-novel { background-color: #6c5ce7; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-new-novel:hover { background-color: #5b4cc4; }
-        .btn-new-episode { background-color: #00b894; color: white; } /* 초록색 */
-        .btn-new-episode:hover { background-color: #00a185; }
 
-        /* 소설 카드 리스트 */
+        /* 소설 카드 디자인 */
         .novel-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .novel-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s; }
-        .novel-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .novel-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
-        .novel-tag { display: inline-block; background-color: #eef2ff; color: #6c5ce7; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-bottom: 10px; }
+        .novel-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid transparent; }
+        .novel-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #6c5ce7; }
+
+        .novel-tag { display: inline-block; background-color: #eef2ff; color: #6c5ce7; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-bottom: 10px; font-weight: bold; }
+        .novel-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; cursor: pointer; }
         .novel-summary { font-size: 14px; color: #777; line-height: 1.5; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        .novel-actions { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; text-align: right; }
-        .btn-add-part { background-color: white; border: 1px solid #ddd; color: #555; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+        /* 버튼 그룹 */
+        .novel-actions { margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; display: flex; justify-content: space-between; }
+        .btn-action { padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; border: 1px solid #ddd; background: white; color: #555; }
+        .btn-action:hover { background: #f9f9f9; }
+
+        .btn-write { border-color: #00b894; color: #00b894; font-weight: bold; }
+        .btn-write:hover { background-color: #00b894; color: white; }
     </style>
 </head>
 <body>
 
 <div class="header-container">
     <div class="profile-card">
-        <div class="profile-img"></div> <div class="profile-info">
-        <div class="profile-name" id="display-name">로딩 중...</div>
-        <div class="profile-intro" id="display-intro">작가 정보를 불러오는 중입니다.</div>
-    </div>
+        <div class="profile-img"></div>
+        <div class="profile-info">
+            <div class="profile-name" id="display-name">로딩 중...</div>
+            <div class="profile-intro" id="display-intro">작가 정보를 불러오는 중입니다.</div>
+        </div>
     </div>
 </div>
 
 <div class="main-container">
     <div class="section-title">
         <span>📚 연재 중인 소설</span>
-        <div class="btn-group">
-            <button class="btn-new-novel" onclick="createNovel()">+ 새 작품 등록</button>
-        </div>
+        <button class="btn-new-novel" onclick="createNovel()">+ 새 작품 등록</button>
     </div>
 
     <div class="novel-list" id="novel-list-container">
@@ -60,9 +62,7 @@
 </div>
 
 <script>
-    // 페이지가 열리자마자 실행됨
     window.onload = function() {
-        // 1. 로그인할 때 저장해둔 작가 ID를 꺼냅니다.
         const authorId = localStorage.getItem('loginAuthorId');
 
         if (!authorId) {
@@ -71,38 +71,46 @@
             return;
         }
 
-        // 2. 백엔드에 "이 작가의 정보를 다 줘!"라고 요청합니다.
-        // 여기서 님이 만들어야 할 API 주소는 "/api/authors/{아이디}" 입니다.
+        // 작가 정보 + 소설 목록 가져오기
         fetch('/api/authors/' + authorId)
             .then(response => {
                 if(!response.ok) throw new Error("정보를 불러오지 못했습니다.");
                 return response.json();
             })
             .then(data => {
-                // 3. 받아온 데이터(JSON)로 화면을 꾸밉니다.
                 document.getElementById('display-name').innerText = data.name + " 님";
                 document.getElementById('display-intro').innerText = data.introduction;
 
-                // 4. 소설 목록 뿌리기
                 const listContainer = document.getElementById('novel-list-container');
-                listContainer.innerHTML = ''; // 기존 목록 초기화
+                listContainer.innerHTML = '';
 
                 if (data.novels && data.novels.length > 0) {
                     data.novels.forEach(novel => {
+                        // 여기서 '태그'가 배열인지 문자열인지 확인해서 처리
+                        let tagDisplay = novel.tag;
+                        if (Array.isArray(novel.tag)) {
+                            tagDisplay = novel.tag.join(', ');
+                        }
+
                         const card = `
-                            <div class="novel-card">
-                                <span class="novel-tag">${novel.tag}</span>
-                                <div class="novel-title">${novel.title}</div>
-                                <div class="novel-summary">${novel.summary}</div>
-                                <div class="novel-actions">
-                                    <button class="btn-add-part" onclick="addEpisode('${novel.title}')">+ 회차 등록</button>
-                                </div>
-                            </div>
-                        `;
+    <div class="novel-card">
+        <span class="novel-tag">${tagDisplay}</span>
+
+        <div class="novel-title" onclick="location.href='novel_home.html?title=' + encodeURIComponent('${novel.title}')" style="cursor: pointer;">
+            ${novel.title}
+        </div>
+
+        <div class="novel-summary">${novel.summary}</div>
+        <div class="novel-actions">
+            <button class="btn-action" onclick="goManage('${novel.title}')">⚙️ 관리/수정</button>
+            <button class="btn-action btn-write" onclick="goWrite('${novel.title}')">✍️ 회차 쓰기</button>
+        </div>
+    </div>
+`;
                         listContainer.innerHTML += card;
                     });
                 } else {
-                    listContainer.innerHTML = '<p style="color:#777; padding:20px;">등록된 소설이 없습니다.</p>';
+                    listContainer.innerHTML = '<p style="color:#777; padding:20px;">아직 등록된 소설이 없습니다.</p>';
                 }
             })
             .catch(error => {
@@ -111,13 +119,21 @@
             });
     };
 
+    // 새 소설 등록 페이지 이동
     function createNovel() {
-        alert("백엔드: '새 작품 등록' 기능을 만들어주세요!");
-        // 나중에 novel_create.html 로 이동시키면 됨
+        location.href = 'novel_create.html';
     }
 
-    function addEpisode(novelTitle) {
-        alert("백엔드: '" + novelTitle + "'의 새 회차 등록 기능을 만들어주세요!");
+    // [중요] 3번 화면(소설 관리)으로 이동
+    function goManage(title) {
+        // 제목을 가지고 관리 화면으로 이동합니다.
+        // encodeURIComponent는 한글 제목이 주소창에서 깨지지 않게 해줍니다.
+        location.href = 'novel_manage.html?title=' + encodeURIComponent(title);
+    }
+
+    // [중요] 1번 화면(글쓰기)으로 바로 이동 (단축키 개념)
+    function goWrite(title) {
+        location.href = 'novel_part_create.html?title=' + encodeURIComponent(title);
     }
 </script>
 
