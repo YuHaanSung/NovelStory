@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <script src="https://cdn.tailwindcss.com"></script>
     <meta charset="UTF-8">
     <title>회차 글쓰기</title>
     <style>
@@ -17,19 +18,35 @@
         /* 입력창 스타일 */
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
 
-        /* 본문 입력창 (글쓰기 편하게 높게 설정) */
-        textarea { width: 100%; height: 500px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; line-height: 1.6; resize: vertical; box-sizing: border-box; font-family: 'Ridibatang', serif; /* 가독성 좋은 폰트 추천 */ }
+        /* 본문 입력창 */
+        textarea { width: 100%; height: 500px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; line-height: 1.6; resize: vertical; box-sizing: border-box; font-family: 'Ridibatang', serif; }
 
+        /* 버튼 그룹 */
         .btn-group { display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; }
         button { padding: 12px 25px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
         .btn-save { background-color: #6c5ce7; color: white; }
         .btn-save:hover { background-color: #5b4cc4; }
         .btn-cancel { background-color: #e0e0e0; color: #333; }
         .btn-cancel:hover { background-color: #d0d0d0; }
+
+        /* 체크박스 스타일 커스텀 */
+        .vip-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: #fffbeb; /* 연한 노란색 배경 */
+            border: 1px solid #fcd34d;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .vip-checkbox-wrapper:hover { background-color: #fef3c7; }
+        .vip-checkbox-wrapper input { width: 20px; height: 20px; margin-right: 10px; accent-color: #f59e0b; cursor: pointer; }
+        .vip-label { font-weight: bold; color: #92400e; display: flex; align-items: center; gap: 5px; margin: 0; cursor: pointer;}
     </style>
 </head>
 <body>
-
+<script src="/js/header.js"></script>
 <div class="container">
     <div class="header">
         <div class="novel-info" id="novelInfo">소설 제목 로딩 중...</div>
@@ -51,6 +68,13 @@
         <textarea id="content" placeholder="여기에 소설 내용을 마음껏 펼쳐주세요..."></textarea>
     </div>
 
+    <div class="form-group">
+        <label class="vip-checkbox-wrapper">
+            <input type="checkbox" id="isVip">
+            <span class="vip-label">💎 VIP 전용 회차로 설정 (VIP 독자만 볼 수 있습니다)</span>
+        </label>
+    </div>
+
     <div class="btn-group">
         <button class="btn-cancel" onclick="goBack()">취소</button>
         <button class="btn-save" onclick="registerPart()">등록하기</button>
@@ -58,12 +82,10 @@
 </div>
 
 <script>
-    // URL에서 소설 제목 가져오기 (예: novel_part_create.html?title=내소설)
     const urlParams = new URLSearchParams(window.location.search);
     const novelTitle = urlParams.get('title');
     const authorId = localStorage.getItem('loginAuthorId');
 
-    // 페이지 로드 시 실행
     window.onload = function() {
         if (!novelTitle || !authorId) {
             alert("잘못된 접근입니다.");
@@ -77,6 +99,8 @@
         const partNumber = document.getElementById('partNumber').value;
         const partTitle = document.getElementById('partTitle').value;
         const content = document.getElementById('content').value;
+        // 🔥 [추가] 체크박스 값 가져오기 (체크되면 true, 아니면 false)
+        const isVip = document.getElementById('isVip').checked;
 
         if (!partTitle || !content) {
             alert("제목과 내용을 모두 입력해주세요.");
@@ -87,10 +111,10 @@
             novelTitle: novelTitle,
             partTitle: partTitle,
             content: content,
-            partNumber: parseInt(partNumber)
+            partNumber: parseInt(partNumber),
+            vip: isVip
         };
 
-        // 님이 만든 API 호출
         fetch(`/api/authors/${authorId}/NewNovelPartRegister`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -98,8 +122,7 @@
         })
             .then(response => response.text())
             .then(message => {
-                alert(message); // "OOO님의 소설... 등록되었습니다!"
-                // 등록 후 소설 관리 화면(3번 화면)으로 이동 (아직 안 만들었으니 일단 뒤로가기)
+                alert(message);
                 goBack();
             })
             .catch(error => {
@@ -109,7 +132,6 @@
     }
 
     function goBack() {
-        // 이전 페이지로 돌아가기
         window.history.back();
     }
 </script>

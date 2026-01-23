@@ -10,6 +10,7 @@ public class Author {
     private String id;
     private String password;
     //해당 작가가 소유한 Novel들을 저장하는 배열
+    private Role role;
 
     public String getName() {
         return name;
@@ -43,10 +44,13 @@ public class Author {
         this.password = password;
     }
 
+    public Role getRole() {
+        return role;
+    }
 
-
-
-
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
     //생성자는 작가이름, 작가아이디, 비밀번호, 작가소개를 매개변수로 받음.
     public Author(String name, String introduction, String id, String password) {
@@ -54,6 +58,7 @@ public class Author {
         this.introduction = introduction;
         this.id = id;
         this.password = password;
+        this.role = Role.USER; //작가의 역할을 AUTHOR로 설정
     }
 
 

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>작가 등록 - NovelHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style> body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8fafc; } </style>
+</head>
+<body>
+<script src="/js/header.js"></script>
+
+<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-10">
+
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-lg border border-gray-100">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">작가로 데뷔하세요 ✍️</h1>
+            <p class="text-gray-500 mt-2 text-sm">당신의 이야기가 세상에 나올 차례입니다.</p>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">작가명 (필명)</label>
+                <input type="text" id="name" placeholder="독자들에게 보여질 이름"
+                       class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">아이디</label>
+                <input type="text" id="id" placeholder="로그인에 사용할 아이디"
+                       class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+                <input type="password" id="password" placeholder="비밀번호 입력"
+                       class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">한줄 소개</label>
+                <input type="text" id="introduction" placeholder="나를 표현하는 한 마디"
+                       class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+
+            <button onclick="signup()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition shadow-md mt-4">
+                가입 완료
+            </button>
+        </div>
+
+        <div class="mt-6 text-center text-sm text-gray-500">
+            이미 작가님이신가요?
+            <a href="login.html" class="text-indigo-600 font-bold hover:underline">로그인</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function signup() {
+        const name = document.getElementById('name').value;
+        const id = document.getElementById('id').value;
+        const password = document.getElementById('password').value;
+        const introduction = document.getElementById('introduction').value;
+
+        if(!name || !id || !password) {
+            alert("필수 정보를 모두 입력해주세요.");
+            return;
+        }
+
+        fetch('/api/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, id, password, introduction })
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                location.href = 'login.html';
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+</body>
+</html>

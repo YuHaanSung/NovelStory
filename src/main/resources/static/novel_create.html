@@ -2,79 +2,75 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>노벨스토리 - 새 작품 등록</title>
-    <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f2f4f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 500px; }
-        h2 { text-align: center; color: #333; margin-bottom: 30px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input, textarea { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #6c5ce7; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; }
-        button:hover { background-color: #5b4cc4; }
-        .back-link { display: block; text-align: center; margin-top: 15px; text-decoration: none; color: #888; font-size: 14px; }
-    </style>
+    <title>새 작품 등록</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style> body { background-color: #f8fafc; font-family: 'Noto Sans KR', sans-serif; } </style>
 </head>
 <body>
+<script src="/js/header.js"></script>
 
-<div class="container">
-    <h2>✨ 새 작품 등록</h2>
+<div class="min-h-screen flex items-center justify-center px-4 py-10">
 
-    <label>작품 제목</label>
-    <input type="text" id="title" placeholder="제목을 입력하세요">
+    <div class="bg-white w-full max-w-2xl p-8 rounded-2xl shadow-lg border border-gray-100">
 
-    <label>태그</label>
-    <input type="text" id="tag" placeholder="예: 판타지, 무협, 로맨스">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-900">새 작품 만들기</h1>
+            <p class="text-gray-500 mt-2">독자들을 만날 준비가 되셨나요?</p>
+        </div>
 
-    <label>작품 줄거리</label>
-    <textarea id="summary" rows="5" placeholder="독자들이 보고 싶어할 줄거리를 입력해주세요."></textarea>
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">작품 제목</label>
+                <input type="text" id="title" placeholder="독자의 눈길을 끌 매력적인 제목을 입력하세요"
+                       class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition text-lg font-bold">
+            </div>
 
-    <button onclick="registerNovel()">작품 등록하기</button>
-    <a href="writer_main.html" class="back-link">취소하고 돌아가기</a>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">태그 (쉼표로 구분)</label>
+                <input type="text" id="tag" placeholder="예: 판타지, 먼치킨, 로맨스, 힐링"
+                       class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">작품 줄거리</label>
+                <textarea id="summary" rows="5" placeholder="어떤 이야기인가요? 간략하게 소개해주세요."
+                          class="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition resize-none"></textarea>
+            </div>
+
+            <button onclick="registerNovel()"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-md transition transform hover:-translate-y-1 mt-4">
+                작품 등록하기 🚀
+            </button>
+        </div>
+    </div>
 </div>
 
 <script>
     function registerNovel() {
-        // 1. 로컬스토리지에서 로그인된 작가 ID 가져오기
         const authorId = localStorage.getItem('loginAuthorId');
+        if (!authorId) { alert('로그인이 필요합니다.'); location.href = 'login.html'; return; }
 
-        // 로그인이 안 되어 있다면 튕겨내기
-        if (!authorId) {
-            alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
-            location.href = 'login.html';
-            return;
-        }
+        const title = document.getElementById('title').value;
+        const tag = document.getElementById('tag').value;
+        const summary = document.getElementById('summary').value;
 
-        // 2. 보낼 데이터 포장하기
-        // 님께서 만든 AuthorNewNovelResponse DTO 구조에 맞춤 (title, tag, summary)
-        const data = {
-            title: document.getElementById('title').value,
-            tag: document.getElementById('tag').value,
-            summary: document.getElementById('summary').value
-        };
+        if (!title || !summary) { alert("제목과 줄거리는 필수입니다!"); return; }
 
-        // 값 비었는지 체크
-        if(!data.title || !data.tag || !data.summary) {
-            alert("모든 내용을 입력해주세요.");
-            return;
-        }
-
-        // 3. 백엔드로 전송 (님이 만든 URL 구조: /api/authors/{id}/NewNovelRegister)
         fetch(`/api/authors/${authorId}/NewNovelRegister`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ title, tag, summary })
         })
-            .then(response => response.text()) // Controller가 String을 반환하므로 text()로 받음
-            .then(message => {
-                alert(message); // "작가 OOO님의 새로운 소설... 등록되었습니다!"
-                location.href = 'writer_main.html'; // 성공 후 메인으로 이동
+            .then(response => response.text())
+            .then(msg => {
+                alert(msg);
+                location.href = 'writer_main.html';
             })
-            .catch(error => {
-                console.error('에러:', error);
-                alert("소설 등록 중 문제가 발생했습니다.");
+            .catch(err => {
+                console.error(err);
+                alert("등록 중 오류가 발생했습니다.");
             });
     }
 </script>
-
 </body>
 </html>

@@ -2,63 +2,58 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>노벨스토리 - 작가 스튜디오</title>
+    <title>작가 스튜디오</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f2f4f7; margin: 0; padding: 0; }
-
-        /* 프로필 영역 */
-        .header-container { background-color: white; padding: 40px 20px; text-align: center; border-bottom: 1px solid #ddd; }
-        .profile-card { max-width: 800px; margin: 0 auto; display: flex; align-items: center; gap: 20px; }
-        .profile-img { width: 80px; height: 80px; background-color: #333; border-radius: 50%; }
-        .profile-info { text-align: left; }
-        .profile-name { font-size: 24px; font-weight: bold; color: #333; }
-        .profile-intro { color: #666; margin-top: 5px; }
-
-        /* 소설 목록 영역 */
-        .main-container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
-        .section-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-
-        .btn-new-novel { background-color: #6c5ce7; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-new-novel:hover { background-color: #5b4cc4; }
-
-        /* 소설 카드 디자인 */
-        .novel-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .novel-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid transparent; }
-        .novel-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #6c5ce7; }
-
-        .novel-tag { display: inline-block; background-color: #eef2ff; color: #6c5ce7; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-bottom: 10px; font-weight: bold; }
-        .novel-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; cursor: pointer; }
-        .novel-summary { font-size: 14px; color: #777; line-height: 1.5; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-
-        /* 버튼 그룹 */
-        .novel-actions { margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; display: flex; justify-content: space-between; }
-        .btn-action { padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; border: 1px solid #ddd; background: white; color: #555; }
-        .btn-action:hover { background: #f9f9f9; }
-
-        .btn-write { border-color: #00b894; color: #00b894; font-weight: bold; }
-        .btn-write:hover { background-color: #00b894; color: white; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8fafc; }
     </style>
 </head>
 <body>
+<script src="/js/header.js"></script>
+<script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 
-<div class="header-container">
-    <div class="profile-card">
-        <div class="profile-img"></div>
-        <div class="profile-info">
-            <div class="profile-name" id="display-name">로딩 중...</div>
-            <div class="profile-intro" id="display-intro">작가 정보를 불러오는 중입니다.</div>
+<div class="max-w-5xl mx-auto px-4 py-8">
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 flex flex-col md:flex-row items-center gap-6 mb-10">
+        <div class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-md relative">
+            <span id="profile-initial">?</span>
+            <span id="profile-crown" class="hidden absolute -top-2 -right-2 text-2xl">👑</span>
+        </div>
+
+        <div class="text-center md:text-left flex-1">
+            <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
+                <h1 class="text-2xl font-bold text-gray-900" id="display-name">작가님</h1>
+                <span id="vip-badge" class="hidden bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-full border border-yellow-200">
+                    VIP 유저
+                </span>
+            </div>
+            <p class="text-gray-500 text-lg" id="display-intro">자기소개를 불러오는 중...</p>
+        </div>
+
+        <div class="flex gap-3">
+            <button onclick="location.href='novel_create.html'" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition shadow-lg flex items-center gap-2">
+                <span>+ 새 작품 만들기</span>
+            </button>
+        </div>
+
+        <div id="payment-box" class="mt-8 p-6 bg-yellow-50 border border-yellow-200 rounded-xl hidden">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">💎 VIP 유저로 업그레이드</h3>
+            <p class="text-sm text-gray-600 mb-4">월 5,000원으로 노벨허브의 모든 소설을 즐겨보세요!</p>
+            <button onclick="requestPay()" class="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-lg shadow-md transition">
+                카카오페이로 5,000원 결제하기
+            </button>
         </div>
     </div>
-</div>
 
-<div class="main-container">
-    <div class="section-title">
-        <span>📚 연재 중인 소설</span>
-        <button class="btn-new-novel" onclick="createNovel()">+ 새 작품 등록</button>
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            📚 내 작품 목록
+        </h2>
     </div>
 
-    <div class="novel-list" id="novel-list-container">
+    <div id="novel-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     </div>
+
 </div>
 
 <script>
@@ -71,71 +66,104 @@
             return;
         }
 
-        // 작가 정보 + 소설 목록 가져오기
         fetch('/api/authors/' + authorId)
-            .then(response => {
-                if(!response.ok) throw new Error("정보를 불러오지 못했습니다.");
-                return response.json();
-            })
+            .then(res => { if(!res.ok) throw new Error(); return res.json(); })
             .then(data => {
-                document.getElementById('display-name').innerText = data.name + " 님";
-                document.getElementById('display-intro').innerText = data.introduction;
+                // 1. 기본 정보 채우기
+                document.getElementById('display-name').innerText = data.name;
+                document.getElementById('display-intro').innerText = data.introduction || "소개가 없습니다.";
+                document.getElementById('profile-initial').innerText = data.name.charAt(0);
 
-                const listContainer = document.getElementById('novel-list-container');
-                listContainer.innerHTML = '';
+                // 🔥 [핵심] VIP 여부에 따른 화면 처리
+                const vipBadge = document.getElementById('vip-badge');
+                const profileCrown = document.getElementById('profile-crown');
+                const paymentBox = document.getElementById('payment-box');
+
+                if (data.role === 'VIP') {
+                    // VIP라면? -> 배지 보여주고, 결제창 숨김
+                    vipBadge.classList.remove('hidden');
+                    profileCrown.classList.remove('hidden');
+                    paymentBox.classList.add('hidden'); // 이미 샀으니 숨김
+                } else {
+                    // 일반 유저라면? -> 배지 숨기고, 결제창 보여줌
+                    vipBadge.classList.add('hidden');
+                    profileCrown.classList.add('hidden');
+                    paymentBox.classList.remove('hidden'); // 사라고 유도함
+                }
+
+                // 2. 소설 목록 그리기 (기존 코드와 동일)
+                const container = document.getElementById('novel-list-container');
+                container.innerHTML = '';
 
                 if (data.novels && data.novels.length > 0) {
                     data.novels.forEach(novel => {
-                        // 여기서 '태그'가 배열인지 문자열인지 확인해서 처리
-                        let tagDisplay = novel.tag;
-                        if (Array.isArray(novel.tag)) {
-                            tagDisplay = novel.tag.join(', ');
+                        let tagHtml = '';
+                        if(novel.tag){
+                            const tags = Array.isArray(novel.tag) ? novel.tag : [novel.tag];
+                            tags.forEach(t => tagHtml += `<span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md mr-1">#${t}</span>`);
                         }
 
-                        const card = `
-    <div class="novel-card">
-        <span class="novel-tag">${tagDisplay}</span>
+                        const html = `
+                                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
+                                    <div class="p-6 flex flex-col h-full">
+                                        <div class="mb-2">${tagHtml}</div>
+                                        <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-indigo-600 cursor-pointer"
+                                            onclick="location.href='novel_home.html?title=' + encodeURIComponent('${novel.title}')">${novel.title}</h3>
+                                        <p class="text-gray-500 text-sm line-clamp-2 mb-4 flex-1">${novel.summary}</p>
 
-        <div class="novel-title" onclick="location.href='novel_home.html?title=' + encodeURIComponent('${novel.title}')" style="cursor: pointer;">
-            ${novel.title}
-        </div>
-
-        <div class="novel-summary">${novel.summary}</div>
-        <div class="novel-actions">
-            <button class="btn-action" onclick="goManage('${novel.title}')">⚙️ 관리/수정</button>
-            <button class="btn-action btn-write" onclick="goWrite('${novel.title}')">✍️ 회차 쓰기</button>
-        </div>
-    </div>
-`;
-                        listContainer.innerHTML += card;
+                                        <div class="flex gap-2 pt-4 border-t border-gray-100 mt-auto">
+                                            <button onclick="goWrite('${novel.title}')" class="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium transition">
+                                                ✍️ 회차 쓰기
+                                            </button>
+                                            <button onclick="goManage('${novel.title}')" class="px-3 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-lg transition">
+                                                ⚙️
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        container.innerHTML += html;
                     });
                 } else {
-                    listContainer.innerHTML = '<p style="color:#777; padding:20px;">아직 등록된 소설이 없습니다.</p>';
+                    container.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-300">아직 등록된 작품이 없습니다.<br>첫 번째 이야기를 시작해보세요!</div>`;
                 }
             })
-            .catch(error => {
-                console.error(error);
-                alert("작가 정보를 불러오는 데 실패했습니다.");
-            });
+            .catch(() => { alert("정보 로딩 실패"); });
     };
 
-    // 새 소설 등록 페이지 이동
-    function createNovel() {
-        location.href = 'novel_create.html';
-    }
+    function goManage(title) { location.href = 'novel_manage.html?title=' + encodeURIComponent(title); }
+    function goWrite(title) { location.href = 'novel_part_create.html?title=' + encodeURIComponent(title); }
 
-    // [중요] 3번 화면(소설 관리)으로 이동
-    function goManage(title) {
-        // 제목을 가지고 관리 화면으로 이동합니다.
-        // encodeURIComponent는 한글 제목이 주소창에서 깨지지 않게 해줍니다.
-        location.href = 'novel_manage.html?title=' + encodeURIComponent(title);
-    }
+    // 결제 함수 (기존 유지)
+    async function requestPay() {
+        const authorId = localStorage.getItem('loginAuthorId');
+        if (!authorId) { alert("로그인이 필요합니다."); return; }
+        const paymentId = `payment-${crypto.randomUUID()}`;
 
-    // [중요] 1번 화면(글쓰기)으로 바로 이동 (단축키 개념)
-    function goWrite(title) {
-        location.href = 'novel_part_create.html?title=' + encodeURIComponent(title);
+        const response = await PortOne.requestPayment({
+            storeId: "store-3ff44a84-f06c-4b2f-9062-6d1e30c18035",
+            channelKey: "channel-key-929ea489-d898-4bea-a82b-ba03f4695553",
+            paymentId: paymentId,
+            orderName: "VIP 작가 멤버십",
+            totalAmount: 5000,
+            currency: "CURRENCY_KRW",
+            payMethod: "EASY_PAY",
+            customer: { fullName: authorId }
+        });
+
+        if (response.code != null) { return alert("결제 실패/취소: " + response.message); }
+
+        try {
+            const res = await fetch(`/api/authors/${authorId}/upgradeToVIP`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: authorId, paymentInfo: response.paymentId })
+            });
+            const msg = await res.text();
+            alert(msg);
+            location.reload();
+        } catch (e) { alert("서버 통신 중 오류가 발생했습니다."); }
     }
 </script>
-
 </body>
 </html>
