@@ -13,6 +13,13 @@ public class NovelPart {
     //vip 소설인지 여부
     private boolean isVip;
 
+    //이 소설편의 조회수
+    private int viewCount;
+
+    // 이 소설편의 추천수
+    private int recommendCount;
+
+
     //생성자는 부모소설, 각편의 제목, 내용, 번호를 매개변수로 받음.
     public NovelPart(String novel, String partTitle, String content, int partNumber) {
         this.novelTitle = novel;
@@ -20,6 +27,8 @@ public class NovelPart {
         this.content = content;
         this.partNumber = partNumber;
         this.isVip = false;
+        this.viewCount = 0;
+        this.recommendCount = 0;
     }
 
     //Getter들
@@ -34,5 +43,19 @@ public class NovelPart {
 
     public void setVip(boolean vip) {
         isVip = vip;
+    }
+    public int getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
+    }
+
+    public int getRecommendCount() {
+        return recommendCount;
+    }
+    public void setRecommendCount(int recommendCount) {
+        this.recommendCount = recommendCount;
     }
 }

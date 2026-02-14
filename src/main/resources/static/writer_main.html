@@ -14,7 +14,7 @@
 
 <div class="max-w-5xl mx-auto px-4 py-8">
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 flex flex-col md:flex-row items-center gap-6 mb-10">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 flex flex-col md:flex-row items-center gap-6 mb-6">
         <div class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-md relative">
             <span id="profile-initial">?</span>
             <span id="profile-crown" class="hidden absolute -top-2 -right-2 text-2xl">👑</span>
@@ -35,14 +35,31 @@
                 <span>+ 새 작품 만들기</span>
             </button>
         </div>
+    </div>
 
-        <div id="payment-box" class="mt-8 p-6 bg-yellow-50 border border-yellow-200 rounded-xl hidden">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">💎 VIP 유저로 업그레이드</h3>
-            <p class="text-sm text-gray-600 mb-4">월 5,000원으로 노벨허브의 모든 소설을 즐겨보세요!</p>
-            <button onclick="requestPay()" class="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-lg shadow-md transition">
-                카카오페이로 5,000원 결제하기
-            </button>
+    <div class="grid grid-cols-1 mb-10">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex items-center justify-between transition hover:shadow-md">
+            <div>
+                <p class="text-sm font-medium text-gray-500 mb-1">내 총 수익금</p>
+                <div class="flex items-end gap-1">
+                    <h2 class="text-3xl font-bold text-gray-900" id="revenue-display">0</h2>
+                    <span class="text-lg font-medium text-gray-400 mb-1">원</span>
+                </div>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
         </div>
+    </div>
+
+    <div id="payment-box" class="mb-10 p-6 bg-yellow-50 border border-yellow-200 rounded-xl hidden">
+        <h3 class="text-lg font-bold text-gray-800 mb-2">💎 VIP 유저로 업그레이드</h3>
+        <p class="text-sm text-gray-600 mb-4">월 5,000원으로 노벨허브의 모든 소설을 즐겨보세요!</p>
+        <button onclick="requestPay()" class="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-lg shadow-md transition">
+            카카오페이로 5,000원 결제하기
+        </button>
     </div>
 
     <div class="flex items-center justify-between mb-6">
@@ -58,6 +75,7 @@
 
 <script>
     window.onload = function() {
+        // 로컬스토리지 키 이름 확인 (코드 원본에 따라 loginAuthorId 사용)
         const authorId = localStorage.getItem('loginAuthorId');
 
         if (!authorId) {
@@ -66,15 +84,16 @@
             return;
         }
 
+        // 1. 작가 기본 정보 및 소설 목록 가져오기
         fetch('/api/authors/' + authorId)
             .then(res => { if(!res.ok) throw new Error(); return res.json(); })
             .then(data => {
-                // 1. 기본 정보 채우기
+                // 1-1. 기본 정보 채우기
                 document.getElementById('display-name').innerText = data.name;
                 document.getElementById('display-intro').innerText = data.introduction || "소개가 없습니다.";
                 document.getElementById('profile-initial').innerText = data.name.charAt(0);
 
-                // 🔥 [핵심] VIP 여부에 따른 화면 처리
+                // 1-2. VIP 여부에 따른 화면 처리
                 const vipBadge = document.getElementById('vip-badge');
                 const profileCrown = document.getElementById('profile-crown');
                 const paymentBox = document.getElementById('payment-box');
@@ -83,15 +102,15 @@
                     // VIP라면? -> 배지 보여주고, 결제창 숨김
                     vipBadge.classList.remove('hidden');
                     profileCrown.classList.remove('hidden');
-                    paymentBox.classList.add('hidden'); // 이미 샀으니 숨김
+                    paymentBox.classList.add('hidden');
                 } else {
                     // 일반 유저라면? -> 배지 숨기고, 결제창 보여줌
                     vipBadge.classList.add('hidden');
                     profileCrown.classList.add('hidden');
-                    paymentBox.classList.remove('hidden'); // 사라고 유도함
+                    paymentBox.classList.remove('hidden');
                 }
 
-                // 2. 소설 목록 그리기 (기존 코드와 동일)
+                // 1-3. 소설 목록 그리기
                 const container = document.getElementById('novel-list-container');
                 container.innerHTML = '';
 
@@ -129,12 +148,28 @@
                 }
             })
             .catch(() => { alert("정보 로딩 실패"); });
+
+        // 2. [추가된 기능] 수익금 가져오기
+        // 작성해주신 백엔드: @GetMapping("/api/authors/{authorId}/revenue")
+        fetch('/api/authors/' + authorId + '/revenue')
+            .then(res => {
+                if(!res.ok) throw new Error("수익금 조회 실패");
+                return res.json(); // Long 타입(숫자) 반환
+            })
+            .then(revenue => {
+                // 천 단위 콤마 찍어서 표시
+                document.getElementById('revenue-display').innerText = revenue.toLocaleString();
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('revenue-display').innerText = "0";
+            });
     };
 
     function goManage(title) { location.href = 'novel_manage.html?title=' + encodeURIComponent(title); }
     function goWrite(title) { location.href = 'novel_part_create.html?title=' + encodeURIComponent(title); }
 
-    // 결제 함수 (기존 유지)
+    // 결제 함수
     async function requestPay() {
         const authorId = localStorage.getItem('loginAuthorId');
         if (!authorId) { alert("로그인이 필요합니다."); return; }

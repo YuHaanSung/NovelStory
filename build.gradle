@@ -25,11 +25,17 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	// [수정됨] webmvc -> web (이 안에 Jackson, Tomcat 등이 다 들어있습니다)
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// 롬복 (기존 유지)
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+
+	// [수정됨] 테스트용 라이브러리도 표준인 starter-test로 변경 추천
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 tasks.named('test') {

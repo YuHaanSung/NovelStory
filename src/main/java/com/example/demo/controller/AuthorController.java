@@ -23,6 +23,8 @@ public class AuthorController {
     private List<Comment> commentList = new ArrayList<>();
     private Long commentIdCounter = 1L;
 
+
+
     @PostMapping("/api/signup") // 프론트엔드가 이 주소로 데이터를 보냅니다.
     public String register(@RequestBody AuthorRequest request) {
 
@@ -203,6 +205,99 @@ public class AuthorController {
 
         // 3. 통과! 소설 내용 보여줌
         return ResponseEntity.ok(targetPart);
+    }
+    // [수정됨] 조회수 증가 API (VIP면 볼 때마다 수익 적립!)
+    @PostMapping("/api/novels/{novelTitle}/parts/{partNumber}/view")
+    public ResponseEntity<Void> increaseViewCount(
+            @PathVariable String novelTitle,
+            @PathVariable int partNumber,
+            @RequestParam(required = false) String viewerId
+    ) {
+        NovelPart targetPart = null;
+        for (NovelPart part : NovelPartList) {
+            if (part.getNovelTitle().equals(novelTitle) && part.getPartNumber() == partNumber) {
+                targetPart = part;
+                break;
+            }
+        }
+
+        if (targetPart == null) return ResponseEntity.notFound().build();
+
+        // 1. VIP 검문 (권한 확인)
+        if (targetPart.isVip()) {
+            boolean isPass = false;
+            if (viewerId != null && !viewerId.isEmpty()) {
+                for (Author author : authorList) {
+                    if (author.getId().equals(viewerId) && author.getRole() == Role.VIP) {
+                        isPass = true;
+                        break;
+                    }
+                }
+            }
+            if (!isPass) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
+        // 2. 파트 조회수 증가
+        synchronized (NovelPartList) {
+            targetPart.setViewCount(targetPart.getViewCount() + 1);
+        }
+
+        // 3. 전체 조회수 증가
+        synchronized (novelList) {
+            for (Novel novel : novelList) {
+                if (novel.getTitle().equals(novelTitle)) {
+                    novel.setTotalCounts(novel.getTotalCounts() + 1);
+                    break;
+                }
+            }
+        }
+
+        // 🔥 4. 수익 정산 (여기가 수정됨!)
+        // VIP 회차라면? -> 볼 때마다 100원씩 바로 적립!
+        if (targetPart.isVip()) {
+            addRevenueToAuthor(novelTitle, 100);
+        }
+        // 일반 회차라면? -> (선택사항) 100 조회수마다 10원 적립 등 규칙 추가 가능
+        else {
+            // 예: 일반 회차는 돈 안 줌 (원하시면 주석 해제)
+            // addRevenueToAuthor(novelTitle, 1);
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    // 💰 [새로 추가할 함수] 작가 찾아서 돈 올려주는 도우미 함수
+    private void addRevenueToAuthor(String novelTitle, int amount) {
+        // 1. 소설 제목으로 작가 이름 찾기
+        String authorName = "";
+        for(Novel novel : novelList) {
+            if(novel.getTitle().equals(novelTitle)) {
+                authorName = novel.getAuthor();
+                break;
+            }
+        }
+
+        // 2. 작가 목록에서 해당 작가 찾아서 적립금 플러스
+        for(Author author : authorList) {
+            if(author.getName().equals(authorName)) {
+                author.setTotalRevenue(author.getTotalRevenue() + amount);
+                System.out.println("💰 수익 발생! " + authorName + " 작가님께 " + amount + "원 적립됨. (총액: " + author.getTotalRevenue() + ")");
+                break;
+            }
+        }
+    }
+
+    //작가 메인화면에서 내 수익금 확인용
+    @GetMapping("/api/authors/{authorId}/revenue")
+    public long getAuthorRevenue(@PathVariable String authorId) {
+        for(Author author : authorList) {
+            if(author.getId().equals(authorId)) {
+                return author.getTotalRevenue();
+            }
+        }
+        return 0;
     }
 
     //소설관리페이지로 이동해서 작가가 자신의 소설들을 확인할 수 있도록 함.
@@ -422,4 +517,86 @@ public class AuthorController {
 
         return false; // 뭔가 이상하면 무조건 불합격
     }
+
+    //조회수와 추천수를 보여주는 기능
+    @GetMapping("/api/novels/{novelTitle}/{parts}/stats")
+    public List<ViewRecommendCount> getViewRecommendCounts(@PathVariable String novelTitle, @PathVariable String parts) {
+        List<ViewRecommendCount> result = new ArrayList<>();
+        for (NovelPart part : NovelPartList) {
+            if (part.getNovelTitle().equals(novelTitle)) {
+                ViewRecommendCount vrc = new ViewRecommendCount(
+                        part.getNovelTitle(),
+                        part.getPartTitle(),
+                        part.getContent(),
+                        part.getPartNumber(),
+                        part.isVip(),
+                        part.getViewCount(),
+                        part.getRecommendCount()
+                );
+                result.add(vrc);
+            }
+        }
+        return result;
+    }
+
+    //추천수를 증가시키는 기능
+    @PostMapping("/api/novels/{novelTitle}/parts/{partNumber}/recommend")
+    public String recommendNovelPart(@PathVariable String novelTitle, @PathVariable int partNumber) {
+        for (NovelPart part : NovelPartList) {
+            if (part.getNovelTitle().equals(novelTitle) && part.getPartNumber() == partNumber) {
+                part.setRecommendCount(part.getRecommendCount() + 1);
+
+                //해당 소설의 총추천수도 증가
+                for (Novel novel : novelList) {
+                    if (novel.getTitle().equals(novelTitle)) {
+                        novel.setTotalLikes(novel.getTotalLikes() + 1);
+                        break;
+                    }
+                }
+
+                return "추천수가 증가되었습니다!";
+            }
+        }
+        return "해당 소설 회차를 찾을 수 없습니다.";
+    }
+
+
+    //소설의 총조회수와 총추천수를 보여주는 기능
+    @GetMapping("/api/novels/{novelTitle}/stats")
+    public List<statsResponse> getNovelStats(@PathVariable String novelTitle) {
+        List<statsResponse> result = new ArrayList<>();
+        for (Novel novel : novelList) {
+            if (novel.getTitle().equals(novelTitle)) {
+                statsResponse stats = new statsResponse(
+                        novel.getTitle(),
+                        novel.getTotalCounts(),
+                        novel.getTotalLikes()
+                );
+                result.add(stats);
+            }
+        }
+        return result;
+    }
+
+
+
+    // 가장 많이 조회된 소설 Top 5
+    @GetMapping("/api/novels/topViewed")
+    public List<Novel> getTopViewedNovels() {
+        return novelList.stream()
+                .sorted((n1, n2) -> Integer.compare(n2.getTotalCounts(), n1.getTotalCounts())) // 스트림에서 정렬 (원본 보존)
+                .limit(5)
+                .toList();
+    }
+
+    // 가장 많이 추천된 소설 Top 5
+    @GetMapping("/api/novels/topRecommended")
+    public List<Novel> getTopRecommendedNovels() {
+        return novelList.stream()
+                .sorted((n1, n2) -> Integer.compare(n2.getTotalLikes(), n1.getTotalLikes())) // 스트림에서 정렬 (원본 보존)
+                .limit(5)
+                .toList();
+    }
 }
+
+

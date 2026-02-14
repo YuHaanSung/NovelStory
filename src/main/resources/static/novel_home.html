@@ -21,7 +21,6 @@
             overflow: hidden;
         }
 
-        /* 배경 장식용 원 */
         .novel-header-bg::before {
             content: '';
             position: absolute;
@@ -46,6 +45,20 @@
         }
         .novel-tag:hover { background-color: rgba(255, 255, 255, 0.3); transform: translateY(-1px); }
 
+        /* 통계 배지 스타일 (NEW) */
+        .stat-badge {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         /* 회차 카드 스타일 */
         .part-card {
             background: white;
@@ -66,9 +79,8 @@
             border-color: #6366f1;
         }
 
-        /* VIP 카드 전용 스타일 */
         .part-card.vip {
-            background: #fffbeb; /* 연한 금색 배경 */
+            background: #fffbeb;
             border-color: #fcd34d;
         }
         .part-card.vip:hover {
@@ -89,8 +101,6 @@
             background: #4f46e5;
             color: white;
         }
-
-        /* VIP 버튼 스타일 */
         .part-card.vip .btn-read {
             background: #fef3c7;
             color: #d97706;
@@ -112,15 +122,28 @@
                 <i class="fas fa-book-open text-6xl text-white/80"></i>
             </div>
 
-            <div class="flex-1">
+            <div class="flex-1 w-full">
                 <div id="tags" class="flex flex-wrap gap-2 mb-4"></div>
 
-                <h1 class="text-4xl font-extrabold mb-3 leading-tight" id="title">제목 로딩 중...</h1>
+                <h1 class="text-4xl font-extrabold mb-4 leading-tight" id="title">제목 로딩 중...</h1>
 
-                <div class="flex items-center gap-3 text-white/80 text-sm font-medium mb-6">
-                    <span class="flex items-center gap-1"><i class="fas fa-user-edit"></i> <span id="author">작가명</span></span>
-                    <span class="w-1 h-1 bg-white/50 rounded-full"></span>
-                    <span class="flex items-center gap-1"><i class="far fa-clock"></i> 연재중</span>
+                <div class="flex flex-wrap items-center gap-3 text-white/90 text-sm font-medium mb-6">
+                    <span class="flex items-center gap-2 mr-2">
+                        <i class="fas fa-user-edit opacity-70"></i>
+                        <span id="author" class="text-lg">작가명</span>
+                    </span>
+
+                    <span class="h-4 w-px bg-white/30 hidden sm:block"></span>
+
+                    <div class="stat-badge" title="총 조회수">
+                        <i class="far fa-eye text-blue-200"></i>
+                        <span id="total-views">0</span>
+                    </div>
+
+                    <div class="stat-badge" title="총 추천수">
+                        <i class="fas fa-heart text-pink-300"></i>
+                        <span id="total-recommends">0</span>
+                    </div>
                 </div>
 
                 <div class="bg-black/10 rounded-xl p-5 backdrop-blur-sm border border-white/10">
@@ -153,13 +176,19 @@
     window.onload = function() {
         if (!novelTitle) { alert("잘못된 접근입니다."); location.href = 'index.html'; return; }
 
-        // 1. 소설 기본 정보 가져오기
+        // 1. 소설 기본 정보 + 총계 가져오기
         fetch('/api/novels/' + encodeURIComponent(novelTitle))
             .then(res => res.json())
             .then(data => {
                 document.getElementById('title').innerText = data.title;
                 document.getElementById('author').innerText = data.author;
                 document.getElementById('summary').innerText = data.summary;
+
+                // 🔥 [핵심] 총 조회수 / 총 추천수 표시 (숫자가 없으면 0 처리)
+                // (toLocaleString()은 1000단위 콤마를 찍어줍니다. 예: 1,234)
+                document.getElementById('total-views').innerText = (data.totalCounts || 0).toLocaleString();
+                document.getElementById('total-recommends').innerText = (data.totalLikes || 0).toLocaleString();
+                
                 document.title = `${data.title} - 소설 상세`;
 
                 // 태그 그리기
@@ -170,17 +199,16 @@
                 });
             });
 
-        // 2. 회차 목록 가져오기
+        // 2. 회차 목록 가져오기 (기존 코드 유지)
         fetch(`/api/novels/${encodeURIComponent(novelTitle)}/parts`)
             .then(res => res.json())
             .then(parts => {
                 const list = document.getElementById('part-list');
                 const countSpan = document.getElementById('total-count');
 
-                list.innerHTML = ''; // 로딩바 제거
+                list.innerHTML = '';
                 countSpan.innerText = `총 ${parts.length}화`;
 
-                // 회차 번호 순서대로 정렬
                 parts.sort((a, b) => a.partNumber - b.partNumber);
 
                 if(parts.length === 0) {
@@ -188,44 +216,42 @@
                         <div class="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                             <i class="fas fa-feather-alt text-4xl text-gray-300 mb-3"></i>
                             <p class="text-gray-500 font-medium">아직 등록된 회차가 없습니다.</p>
-                            <p class="text-sm text-gray-400">작가님이 열심히 집필 중이에요!</p>
                         </div>`;
                     return;
                 }
 
                 parts.forEach(part => {
-                    // 🔥 VIP 여부에 따라 디자인 변경
-                    // (자바 getter가 isVip()면 JSON에는 "vip": true 로 들어옵니다)
                     const isVip = part.vip;
-
                     const vipBadge = isVip
                         ? `<span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded border border-yellow-200 flex items-center gap-1"><i class="fas fa-crown"></i> VIP</span>`
                         : '';
-
                     const cardClass = isVip ? 'part-card vip' : 'part-card';
-                    const iconColor = isVip ? 'text-yellow-500' : 'text-indigo-100';
-                    const iconType = isVip ? 'fa-lock' : 'fa-book-reader';
+
+                    const views = part.viewCount || 0;
+                    const recommends = part.recommendCount || 0;
 
                     const html = `
                         <div class="${cardClass} group cursor-pointer" onclick="readEpisode(${part.partNumber})">
-                            <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-4 flex-1">
                                 <div class="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
                                     <span class="text-gray-400 font-bold text-lg">${part.partNumber}</span>
                                 </div>
-
-                                <div>
+                                <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
                                         ${vipBadge}
                                         <h3 class="font-bold text-lg text-gray-800 group-hover:text-indigo-600 transition">
                                             ${part.partTitle}
                                         </h3>
                                     </div>
-                                    <p class="text-sm text-gray-400">
-                                        ${new Date().toLocaleDateString()} 업로드 </p>
+                                    <div class="flex items-center gap-3 text-sm text-gray-400">
+                                        <span>${new Date().toLocaleDateString()}</span>
+                                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                        <span class="flex items-center gap-1"><i class="far fa-eye"></i> ${views}</span>
+                                        <span class="flex items-center gap-1 text-pink-400"><i class="fas fa-heart"></i> ${recommends}</span>
+                                    </div>
                                 </div>
                             </div>
-
-                            <button class="btn-read">
+                            <button class="btn-read shrink-0 ml-4">
                                 ${isVip ? '<i class="fas fa-key mr-1"></i> 열람' : '읽기'}
                             </button>
                         </div>
@@ -243,6 +269,5 @@
         location.href = `novel_viewer.html?title=${encodeURIComponent(novelTitle)}&part=${partNumber}`;
     }
 </script>
-
 </body>
 </html>

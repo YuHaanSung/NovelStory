@@ -12,8 +12,18 @@ public class Author {
     //해당 작가가 소유한 Novel들을 저장하는 배열
     private Role role;
 
+    private long totalRevenue = 0;
+
     public String getName() {
         return name;
+    }
+
+    public long getTotalRevenue() {
+        return totalRevenue;
+    }
+
+    public void setTotalRevenue(long totalRevenue) {
+        this.totalRevenue = totalRevenue;
     }
 
     public void setName(String name) {
@@ -52,6 +62,8 @@ public class Author {
         this.role = role;
     }
 
+
+
     //생성자는 작가이름, 작가아이디, 비밀번호, 작가소개를 매개변수로 받음.
     public Author(String name, String introduction, String id, String password) {
         this.name = name;
@@ -59,6 +71,7 @@ public class Author {
         this.id = id;
         this.password = password;
         this.role = Role.USER; //작가의 역할을 AUTHOR로 설정
+        this.totalRevenue = 0;
     }
 
 

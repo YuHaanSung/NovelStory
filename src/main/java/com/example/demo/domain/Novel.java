@@ -15,6 +15,9 @@ public class Novel {
     private String summary;
     //생성자는 작가, 제목, 태그, 요약을 매개변수로 받음.
 
+    private int totalLikes; // 소설의 총 좋아요 수
+    private int totalCounts; // 소설의 총 조회수
+
     public String getAuthor() {
         return author;
     }
@@ -45,6 +48,21 @@ public class Novel {
         this.summary = summary;
     }
 
+    public int getTotalLikes() {
+        return totalLikes;
+    }
+
+    public void setTotalLikes(int totalLikes) {
+        this.totalLikes = totalLikes;
+    }
+
+    public int getTotalCounts() {
+        return totalCounts;
+    }
+
+    public void setTotalCounts(int totalCounts) {
+        this.totalCounts = totalCounts;
+    }
 
     //생성자는 작가, 제목, 태그, 요약을 매개변수로 받음.
     public Novel(String author, String title, String tag, String summary) {
@@ -58,7 +76,10 @@ public class Novel {
                 this.tag.add(t.trim());
             }
         }
+        this.totalCounts = 0;
+        this.totalLikes = 0;
     }
+
     //addTag 메서드: 소설의 태그를 추가하거나 변경할 수 있음.
     public void addTag(String tag) {
         this.tag.add(tag);
