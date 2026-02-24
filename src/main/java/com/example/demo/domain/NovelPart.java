@@ -19,7 +19,7 @@ public class NovelPart {
     // 이 소설편의 추천수
     private int recommendCount;
 
-
+    public NovelPart() {}
     //생성자는 부모소설, 각편의 제목, 내용, 번호를 매개변수로 받음.
     public NovelPart(String novel, String partTitle, String content, int partNumber) {
         this.novelTitle = novel;

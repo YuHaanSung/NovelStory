@@ -18,6 +18,7 @@ public class Comment {
         this.AuthorName = authorName;
         this.content = content;
     }
+    public Comment() {}
 
     public Long getId() {
         return id;

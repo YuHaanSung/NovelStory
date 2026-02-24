@@ -63,7 +63,7 @@ public class Novel {
     public void setTotalCounts(int totalCounts) {
         this.totalCounts = totalCounts;
     }
-
+    public Novel() {}
     //생성자는 작가, 제목, 태그, 요약을 매개변수로 받음.
     public Novel(String author, String title, String tag, String summary) {
         this.author = author;

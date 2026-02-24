@@ -63,7 +63,7 @@ public class Author {
     }
 
 
-
+    public Author() {}
     //생성자는 작가이름, 작가아이디, 비밀번호, 작가소개를 매개변수로 받음.
     public Author(String name, String introduction, String id, String password) {
         this.name = name;
