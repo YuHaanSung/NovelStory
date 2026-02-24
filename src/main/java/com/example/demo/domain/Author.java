@@ -72,7 +72,7 @@ public class Author {
         this.password = password;
         this.role = Role.USER; //작가의 역할을 AUTHOR로 설정
         this.totalRevenue = 0;
-    }
+    }//완성
 
 
 
